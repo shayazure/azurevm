@@ -2,9 +2,25 @@
     [string] $subscriptionId
 )
 
+function _login {
+    $isUserConnected = Get-AzContext
+    if (-not $isUserConnected) {
+        try {
+            $WarningPreference = 'SilentlyContinue'
+            Connect-AzAccount | Out-Null 
+            $WarningPreference = 'Continue'
+            Write-Host "logged in"
+    
+        }
+        catch {
+            Write-Error "couldn't log in ,please try again"
+        }    
+    }
+}
+
 function Get-StorageAccounts {
-    # Authenticate if you haven't already
     # Connect-AzAccount
+    _login    
 
     # Set the context to the specific subscription, if provided
     if ($subscriptionId) {
