@@ -2,15 +2,30 @@
     [string] $subscriptionId
 )
 
-function Get-SqlServers {
-    # Authenticate if you haven't already
-    # Connect-AzAccount
-
-    # Set the context to the specific subscription, if provided
-    if ($subscriptionId) {
-        Write-Host "Setting context to subscription ID: $subscriptionId"
-        Set-AzContext -SubscriptionId $subscriptionId | Out-Null
+function _login {
+    $isUserConnected = Get-AzContext
+    if (-not $isUserConnected) {
+        try {
+            $WarningPreference = 'SilentlyContinue'
+            Connect-AzAccount | Out-Null 
+            $WarningPreference = 'Continue'
+            Write-Host "logged in"
+    
+        }
+        catch {
+            Write-Error "couldn't log in ,please try again"
+        }    
     }
+}
+
+function _setSubscription {
+    # Set the Azure context to the specified subscription
+    Set-AzContext -SubscriptionId $subscriptionId | Out-Null
+    Write-Host "Azure context set to subscription: $subscriptionId"
+}
+function Get-SqlServers {
+    _login
+    _setSubscription
 
     # Get the SQL servers for the current subscription context
     $sqlServers = Get-AzResourceGroup | Get-AzSqlServer
